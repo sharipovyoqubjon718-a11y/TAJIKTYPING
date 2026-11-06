@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="tg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Омӯзиши чопи босуръат ба забони тоҷикӣ</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Таъмин кардани сайдбари васеътар ва дарозтар */
+        .sidebar {
+            min-width: 300px !important;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .leaderboard ul {
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-layout">
+        <!-- САЙДБАР (Панели чап) -->
+        <div class="sidebar">
+            <div>
+                <div class="user-profile">
+                    <div class="avatar" id="user-avatar">👤</div>
+                    <div class="user-info">
+                        <h3 id="user-name">Меҳмон</h3>
+                        <p>Дараҷаи фаъол: <span id="sidebar-level">1</span></p>
+                    </div>
+                </div>
+                
+                <div class="stats-card">
+                    <p>👥 Узвшудагони фаъол: <strong id="active-users-count">...</strong></p>
+                </div>
+
+                <div class="leaderboard">
+                    <h3>🏆 Рейтинги беҳтаринҳо</h3>
+                    <ul id="leaderboard-list">
+                        <li><span class="uname">Боргирии рейтинг...</span></li>
+                    </ul>
+                </div>
+            </div>
+
+            <button class="logout-btn" id="logoutBtn">Баромадан</button>
+        </div>
+
+        <!-- МАЙДОНИ АСОСИИ БОЗӢ (Тарафи рост) -->
+        <div class="main-content">
+            <div class="container">
+                <h1>Омӯзиши чопи босуръат ба забони тоҷикӣ</h1>
+
+                <div class="stats">
+                    <div>Дараҷа: <span id="level">1</span></div>
+                    <div>Вақт: <span id="timer">30</span>с</div>
+                    <div>Хатогӣ: <span id="errors">0</span></div>
+                </div>
+
+                <div class="text-display" id="text-display"></div>
+
+                <div class="tajik-hint">
+                    <p style="color: #f87171; font-weight: 600; margin-bottom: 6px;">
+                        ⚠️ Диққат (Мусобиқа): Агар сатри дараҷаро пеш аз тамом шудани вақт нанависед, ба Дараҷаи 1 баргардонида мешавед!
+                    </p>
+                    <span><strong>Эзоҳ барои ҳарфҳои тоҷикӣ:</strong> Қ=Ц | Ҷ=Ы | Ҳ=Щ | Ғ=- | Ӯ==</span>
+                </div>
+
+                <div class="keyboard">
+                    <div class="row">
+                        <div class="key" id="KeyQ">Й</div>
+                        <div class="key" id="KeyW">Ц (Қ)</div>
+                        <div class="key" id="KeyE">У</div>
+                        <div class="key" id="KeyR">К</div>
+                        <div class="key" id="KeyT">Е</div>
+                        <div class="key" id="KeyU">Г</div>
+                        <div class="key" id="KeyI">Ш</div>
+                        <div class="key" id="KeyO">Щ (Ҳ)</div>
+                        <div class="key" id="KeyP">З</div>
+                        <div class="key" id="Minus">- (Ғ)</div>
+                        <div class="key" id="Equal">= (Ӯ)</div>
+                    </div>
+                    <div class="row">
+                        <div class="key" id="KeyA">Ф</div>
+                        <div class="key" id="KeyS">Ы (Ҷ)</div>
+                        <div class="key" id="KeyD">В</div>
+                        <div class="key" id="KeyF">А</div>
+                        <div class="key" id="KeyG">П</div>
+                        <div class="key" id="KeyH">Р</div>
+                        <div class="key" id="KeyJ">О</div>
+                        <div class="key" id="KeyK">Л</div>
+                        <div class="key" id="KeyL">Д</div>
+                        <div class="key" id="Semicolon">Ж</div>
+                        <div class="key" id="Quote">Э</div>
+                    </div>
+                    <div class="row">
+                        <div class="key space" id="Space">Пробел</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Корти анимитсионии бохт -->
+    <div class="game-over-overlay" id="gameOverOverlay">
+        <div class="game-over-card">
+            <div class="card-icon">⚡</div>
+            <h2>Вақт ба охир расид!</h2>
+            <p>Шумо вақтро аз даст додед ва аз сабаби пурра накардани сатр ба <strong>Дараҷаи 1</strong> баргардонида шудед.</p>
+            <button id="restartBtn">Давом додан (Аз сари нав)</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+
+    <!-- ИНТЕГРАТСИЯИ FIREBASE -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-analytics.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAYFjn-oKlBQ-IWcGdj2Zqn89XnsIteWxU",
+            authDomain: "tajiktyping.firebaseapp.com",
+            projectId: "tajiktyping",
+            storageBucket: "tajiktyping.firebasestorage.app",
+            messagingSenderId: "942130540563",
+            appId: "1:942130540563:web:24ec63a9b5dfecb771cfe6",
+            measurementId: "G-9EDFJ8QBD4"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+
+        // Санҷиши Auth ва воридшавӣ
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                document.getElementById('user-name').textContent = user.displayName || user.email.split('@')[0];
+            } else {
+                window.location.href = 'login.html';
+            }
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            signOut(auth).then(() => {
+                window.location.href = 'login.html';
+            });
+        });
+
+        // Сабти баҳо ва хол
+        window.saveGameScore = async function(level, wpm, errors) {
+            try {
+                await addDoc(collection(db, "leaderboard"), {
+                    uid: currentUser ? currentUser.uid : "guest",
+                    username: currentUser ? (currentUser.displayName || currentUser.email.split('@')[0]) : "Меҳмон",
+                    level: level,
+                    wpm: wpm || 0,
+                    errors: errors || 0,
+                    timestamp: new Date()
+                });
+                window.loadLeaderboard();
+            } catch (e) {
+                console.error("Хатогӣ дар сабт: ", e);
+            }
+        };
+
+        // Боргирии рейтинг ва ҳисоби корбарони воқеӣ
+        window.loadLeaderboard = async function() {
+            const listEl = document.getElementById('leaderboard-list');
+            const countEl = document.getElementById('active-users-count');
+            try {
+                // Бор кардани 10 беҳтарин
+                const q = query(collection(db, "leaderboard"), orderBy("level", "desc"), limit(10));
+                const querySnapshot = await getDocs(q);
+                
+                listEl.innerHTML = '';
+                let rank = 1;
+                const uniqueUsers = new Set();
+
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    uniqueUsers.add(data.username);
+                    const rankClass = rank === 1 ? 'gold' : rank === 2 ? 'silver' : rank === 3 ? 'bronze' : '';
+                    
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <span class="rank ${rankClass}">${rank}</span>
+                        <span class="uname">${data.username}</span>
+                        <span class="uscore">Левел ${data.level}</span>
+                    `;
+                    listEl.appendChild(li);
+                    rank++;
+                });
+
+                // Ҳисоби умумии воқеии корбарон дар база
+                const allDocsSnapshot = await getDocs(collection(db, "leaderboard"));
+                const totalUsers = new Set();
+                allDocsSnapshot.forEach(doc => totalUsers.add(doc.data().username));
+                
+                countEl.textContent = totalUsers.size > 0 ? totalUsers.size : 1;
+
+            } catch (e) {
+                console.error("Хатогии боргирии рейтинг: ", e);
+                countEl.textContent = "1";
+            }
+        };
+
+        window.loadLeaderboard();
+    </script>
+</body>
+</html>
