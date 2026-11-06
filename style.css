@@ -173,7 +173,7 @@ h1 {
     padding: 25px;
     border-radius: 12px;
     font-size: 1.4rem;
-    letter-spacing: 2px;
+    letter-spacing: 1px;
     margin-bottom: 20px;
     min-height: 90px;
     display: flex;
@@ -181,10 +181,19 @@ h1 {
     justify-content: center;
     align-items: center;
     font-family: monospace;
+    white-space: pre-wrap; /* НОДИДА НАГИРИФТАНИ ПРОБЕЛҲО */
 }
 
 .text-display span {
     color: #64748b;
+    position: relative;
+}
+
+/* Стил додан ба пробелҳо то ки васеъ ва аниқ тобанд */
+.text-display span.char-space {
+    display: inline-block;
+    width: 12px;
+    text-align: center;
 }
 
 .text-display span.char-correct {
@@ -194,11 +203,18 @@ h1 {
 .text-display span.char-wrong {
     color: #f87171;
     background-color: rgba(248, 113, 113, 0.2);
+    border-radius: 3px;
 }
 
 .text-display span.char-current {
     border-bottom: 3px solid #38bdf8;
     color: #f8fafc;
+}
+
+/* Агар курсор дар болои пробел бошад */
+.text-display span.char-space.char-current {
+    background-color: rgba(56, 189, 248, 0.2);
+    border-radius: 3px;
 }
 
 .tajik-hint {
